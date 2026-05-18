@@ -1,12 +1,14 @@
 // src/calculator.js
-// function add(a, b) {
-//     return a + b;
-// }
+
+// CORRECTION :
+function add(a, b) {
+ return a + b; // ← Correction : addition
+}
 
 // APRÈS (bug volontaire) :
-function add(a, b) {
- return a - b; // ← Bug : soustraction au lieu d'addition !
-}
+// function add(a, b) {
+//  return a - b; // ← Bug : soustraction au lieu d'addition !
+// }
 
 function subtract(a, b) {
     return a - b;
