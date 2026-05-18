@@ -26,5 +26,15 @@
     "eslint": "^10.4.0",
     "globals": "^17.6.0",
     "jest": "^30.4.2"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    }
   }
 }
