@@ -1,5 +1,9 @@
 // src/calculator.js
 
+// Ajoutez cette ligne qui viole ESLint :
+var unused_variable = 'je ne suis jamais utilisée';
+// var déclenche l'erreur no-var + no-unused-vars
+
 // CORRECTION :
 function add(a, b) {
  return a + b; // ← Correction : addition
