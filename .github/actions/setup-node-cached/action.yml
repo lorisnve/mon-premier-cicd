@@ -1,0 +1,21 @@
+name: Setup Node Cached
+description: 'Checkout + setup-node + npm ci en une seule action réutilisable'
+
+inputs:
+  node-version:
+    description: 'Version de Node.js à utiliser'
+    required: false
+    default: '18'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+    - name: Setup Node.js ${{ inputs.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+    - name: Installation des dépendances
+      run: npm ci
+      shell: bash

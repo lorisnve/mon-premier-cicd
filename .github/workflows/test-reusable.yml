@@ -25,14 +25,10 @@ jobs:
       matrix:
         node-version: ${{ fromJSON(inputs.node-versions) }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: Checkout, setup Node.js & npm ci
+        uses: ./.github/actions/setup-node-cached
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - name: Installation des dépendances
-        run: npm ci
       - name: Tests unitaires + couverture
         run: npm run test:ci
       - name: Calculer le coverage total
