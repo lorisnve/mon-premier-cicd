@@ -59,6 +59,14 @@ jobs:
               console.log('| Lines | ' + t.lines.pct + '% |');
             " >> $GITHUB_STEP_SUMMARY
           fi
+      - name: Commenter la PR avec la couverture
+        if: github.event_name == 'pull_request'
+        uses: MishaKav/jest-coverage-comment@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          coverage-summary-path: ./coverage/coverage-summary.json
+      # secrets.GITHUB_TOKEN est disponible automatiquement
+      # Chaque PR recevra un commentaire avec les % de couverture
       - name: Upload rapport de couverture
         uses: actions/upload-artifact@v4
         if: always() # Même si les tests échouent
@@ -84,3 +92,17 @@ jobs:
             exit 1
           fi
           echo 'CI entièrement vert ✓'
+# Ajoutez ce job à la fin de votre ci.yml
+  notify-failure:
+    name: 🔔 Notifier échec
+    runs-on: ubuntu-latest
+    needs: [ lint, test ]
+    if: failure() # S'exécute SEULEMENT si un job précédent a échoué
+    steps:
+      - name: Notifier via webhook
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"🔴 Pipeline CI échoué sur ${{ github.repository }} —
+          ${{ github.sha }}"}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+# Créez le secret SLACK_WEBHOOK_URL dans Settings → Secrets
