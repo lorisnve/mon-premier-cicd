@@ -5,6 +5,12 @@ on:
     branches: [main, 'feature/**']
   pull_request:
     branches: [main]
+    paths: # ← Ajoutez ceci
+      - 'src/**' # se déclenche si src/ change
+      - 'package*.json' # ou si les dépendances changent
+      - '.github/workflows/**' # ou si le workflow change
+      # Astuce : paths-ignore pour exclure plutôt qu'inclure
+
   workflow_dispatch:
 
 # Annule les runs obsolètes sur la même branche
