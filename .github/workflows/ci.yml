@@ -3,13 +3,12 @@ name: CI — Lint, Tests & Coverage
 on:
   push:
     branches: [main, 'feature/**']
+    paths-ignore:
+      - '*.md'
   pull_request:
     branches: [main]
-    paths: # ← Ajoutez ceci
-      - 'src/**' # se déclenche si src/ change
-      - 'package*.json' # ou si les dépendances changent
-      - '.github/workflows/**' # ou si le workflow change
-      # Astuce : paths-ignore pour exclure plutôt qu'inclure
+    paths-ignore:
+      - '*.md'
 
   workflow_dispatch:
 
