@@ -33,43 +33,12 @@ jobs:
       - name: Vérification ESLint
         run: npm run lint
 
-  # ── JOB 2 : Tests avec matrix ─────────────────────────
+  # ── JOB 2 : Tests (workflow réutilisable) ─────────────
   test:
-    name: 🧪 Tests — Node.js ${{ matrix.node-version }}
-    runs-on: ubuntu-latest
-    outputs:
-      lines: ${{ steps.coverage.outputs.lines }} # ⚠ Matrix : valeur de la dernière instance terminée
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [18, 20]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - name: Installation des dépendances
-        run: npm ci
-      - name: Tests unitaires + couverture
-        run: npm run test:ci
-      - name: Calculer le coverage total
-        id: coverage
-        run: |
-          PCT=$(node -e "
-          const d=JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json','utf8'));
-          console.log(d.total.lines.pct);
-          ")
-          echo "lines=$PCT" >> $GITHUB_OUTPUT
-          echo "Coverage lines: $PCT%"
-      - name: Upload rapport de couverture
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-node-${{ matrix.node-version }}
-          path: coverage/
-          retention-days: 14
+    uses: ./.github/workflows/test-reusable.yml
+    with:
+      node-versions: '[18, 20]'
+      coverage-threshold: 80
 
   # ── JOB 3 : Rapport consolidé ─────────────────────────
   report:
