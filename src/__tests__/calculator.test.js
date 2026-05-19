@@ -41,5 +41,6 @@ describe('Calculator', () => {
     //     // Ce test ÉCHOUE intentionnellement sur Node 20
     //     expect(major).toBeLessThan(20);
     // });
-
+    
+    // [Modification de calculator.test.js]
 });
