@@ -23,7 +23,8 @@ jobs:
     name: 🔍 Lint ESLint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout, setup Node.js & npm ci
+      - uses: actions/checkout@v4
+      - name: Setup Node.js & npm ci
         uses: ./.github/actions/setup-node-cached
         with:
           node-version: '18'

@@ -25,7 +25,8 @@ jobs:
       matrix:
         node-version: ${{ fromJSON(inputs.node-versions) }}
     steps:
-      - name: Checkout, setup Node.js & npm ci
+      - uses: actions/checkout@v4
+      - name: Setup Node.js & npm ci
         uses: ./.github/actions/setup-node-cached
         with:
           node-version: ${{ matrix.node-version }}
