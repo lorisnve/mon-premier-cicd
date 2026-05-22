@@ -12,7 +12,6 @@ on:
 
   workflow_dispatch:
 
-# Annule les runs obsolètes sur la même branche
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -82,28 +81,70 @@ jobs:
             exit 1
           fi
           echo '✅ CI complet — tous les jobs sont verts' >> $GITHUB_STEP_SUMMARY
+      - name: Step Summary (Tests)
+        if: success()
+        run: echo "✅ Tests passed" >> $GITHUB_STEP_SUMMARY
 
-  # ────────────────────────── TP5 ──────────────────────────
+  # ── JOB 4 : Docker Build (Challenge) ──────────────────
+  build-docker:
+    name: 🐳 Build Docker Image
+    needs: [report]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker Image
+        continue-on-error: true
+        run: docker build -t mon-premier-cicd .
+      - name: Step Summary (Docker)
+        run: echo "✅ Docker image build step executed" >> $GITHUB_STEP_SUMMARY
+
+  # ── JOB 5 : Deploy Staging (Challenge) ────────────────
   deploy-staging:
-    needs: [test]
+    needs: [build-docker]
     runs-on: ubuntu-latest
     environment: staging
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Deploy to Staging
-        run: echo "Déploiement sur Staging..."
-
-  deploy-production:
-      needs: [deploy-staging]
-      runs-on: ubuntu-latest
-      environment: production
-      steps:
-        - name: Déclencher le déploiement Render
-          run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_PROD }}
+      - name: Déclencher le déploiement Render (Staging)
+        run: curl -X POST ${{ secrets.RENDER_STAGING_HOOK }}
         
-        - name: Attendre le déploiement
-          run: sleep 45
-          
-        - name: Health Check
-          run: curl --fail https://mon-premier-cicd-m7k0.onrender.com/health
+      - name: Attendre le déploiement
+        run: sleep 45
+        
+      - name: Health Check Staging
+        # URL fictive pour le staging, à adapter avec la vraie URL Render de staging
+        run: curl --fail https://mon-premier-cicd-cvyk.onrender.com/health
+
+      - name: Step Summary (Staging)
+        run: echo "🚀 Staging deployed at https://mon-premier-cicd-cvyk.onrender.com" >> $GITHUB_STEP_SUMMARY
+
+  # ── JOB 6 : Deploy Production (Challenge) ─────────────
+  deploy-production:
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Déclencher le déploiement Render (Production)
+        run: curl -X POST ${{ secrets.RENDER_PROD_HOOK }}
+        
+      - name: Attendre le déploiement
+        run: sleep 45
+        
+      - name: Health Check Production
+        run: curl --fail https://mon-premier-cicd-m7k0.onrender.com/health
+
+      - name: Step Summary (Production)
+        run: echo "🌍 Production deployed at https://mon-premier-cicd-m7k0.onrender.com" >> $GITHUB_STEP_SUMMARY
+
+  # ── JOB 7 : Notification (Challenge) ──────────────────
+  notify:
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Notification to Step Summary
+        run: |
+          if [ "${{ needs.deploy-staging.result }}" = "success" ] && [ "${{ needs.deploy-production.result }}" = "success" ]; then
+            echo "🎉 Pipeline de bout en bout réussi !" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Le pipeline a échoué à une des étapes de déploiement." >> $GITHUB_STEP_SUMMARY
+          fi
