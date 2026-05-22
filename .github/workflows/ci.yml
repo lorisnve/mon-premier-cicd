@@ -85,9 +85,9 @@ jobs:
 
   # ────────────────────────── TP5 ──────────────────────────
   deploy-staging:
-    needs: [test] # Attache ce job à la réussite des tests
+    needs: [test]
     runs-on: ubuntu-latest
-    environment: staging # Lie le job à l'environnement GitHub
+    environment: staging
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -103,8 +103,7 @@ jobs:
           run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_PROD }}
         
         - name: Attendre le déploiement
-          run: sleep 45 # Laisse le temps à Render de build et déployer
+          run: sleep 45
           
         - name: Health Check
-          # Remplace par ta vraie URL Render
-          run: curl --fail https://TON_APP.onrender.com/health
+          run: curl --fail https://mon-premier-cicd-m7k0.onrender.com/health

@@ -54,3 +54,11 @@ Le job production se met en attente (statut "Waiting") juste avant son démarrag
 ### Q9 : 
 Le job est marqué comme rejeté et passe au statut "Failed" ou "Canceled". Il n'est pas perdu : il est possible de le relancer manuellement (bouton "Re-run jobs") depuis l'interface une fois le problème résolu.
 
+### Q10 :
+1. Le dépôt GitHub : pour savoir quel code source récupérer.
+2. Le Runtime (Node) : pour savoir quel environnement d'exécution préparer.
+3. La Build Command (npm install) : pour installer les dépendances requises.
+4. La Start Command (npm start) : pour savoir comment lancer le serveur HTTP.
+
+### Q11 :
+https://mon-premier-cicd-m7k0.onrender.com
