@@ -95,11 +95,16 @@ jobs:
         run: echo "Déploiement sur Staging..."
 
   deploy-production:
-    needs: [deploy-staging] # Attache ce job à la réussite du staging
-    runs-on: ubuntu-latest
-    environment: production # Déclenchera la demande d'approbation
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Deploy to Production
-        run: echo "Déploiement en Production..."
+      needs: [deploy-staging]
+      runs-on: ubuntu-latest
+      environment: production
+      steps:
+        - name: Déclencher le déploiement Render
+          run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_PROD }}
+        
+        - name: Attendre le déploiement
+          run: sleep 45 # Laisse le temps à Render de build et déployer
+          
+        - name: Health Check
+          # Remplace par ta vraie URL Render
+          run: curl --fail https://TON_APP.onrender.com/health
