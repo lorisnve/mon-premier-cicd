@@ -82,3 +82,24 @@ jobs:
             exit 1
           fi
           echo '✅ CI complet — tous les jobs sont verts' >> $GITHUB_STEP_SUMMARY
+
+  # ────────────────────────── TP5 ──────────────────────────
+  deploy-staging:
+    needs: [test] # Attache ce job à la réussite des tests
+    runs-on: ubuntu-latest
+    environment: staging # Lie le job à l'environnement GitHub
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy to Staging
+        run: echo "Déploiement sur Staging..."
+
+  deploy-production:
+    needs: [deploy-staging] # Attache ce job à la réussite du staging
+    runs-on: ubuntu-latest
+    environment: production # Déclenchera la demande d'approbation
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy to Production
+        run: echo "Déploiement en Production..."
