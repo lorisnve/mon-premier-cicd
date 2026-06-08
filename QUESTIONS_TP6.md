@@ -75,36 +75,31 @@ Le collègue a tort. Étant donné que le paramètre est optionnel, les anciens 
 ## 4.1 — Créer le workflow de release
 
 ### Q14 :
-
+Le déclencheur est on: push: tags: avec le pattern v*.*.*. La permission requise est contents: write, car le bot GitHub Actions a besoin du droit d'écriture pour créer la release sur le dépôt. Les étapes dans l'ordre sont : le checkout du code (pour avoir l'historique), l'utilisation de git-cliff-action pour lire les Conventional Commits et écrire le CHANGELOG.md, puis softprops/action-gh-release pour publier officiellement la release avec le fichier généré.
 
 ### Q15 :
-
-
+Lors du push du tag, le job s'est déclenché. L'étape de checkout a téléchargé le dépôt. Ensuite, l'étape git-cliff a lu tout mon historique de commits et a généré un fichier markdown. Pour finir, l'étape de création de release a communiqué avec GitHub pour créer la version v1.0.0 dans l'onglet "Releases" du dépôt et a collé le texte du changelog dans la description.
 
 ### Q16 : 
-
+Le CHANGELOG contient la liste de mes commits triés par catégories (Features, Bug Fixes) grâce au format Conventional Commits. C'est bien cohérent avec ce que j'ai fait. Par contre, il inclut aussi des éléments comme les commits chore ou ci qui n'intéressent pas vraiment les utilisateurs finaux de l'application. Je l'améliorerai en configurant git-cliff pour qu'il ignore ces types de commits.
 
 ### Q17 : 
-
-
-### Q18 : 
-
-
-### Q19 : 
-
+Le tag :v1.0.0 est immuable: il garantit que le code déployé aujourd'hui sera exactement le même si on relance l'image dans 2 ans (indispensable pour la production et les rollbacks). Le tag :latest est un pointeur qui se déplace toujours vers la toute dernière version construite. On l'utilise plutôt dans des environnements de développement ou sur son poste local quand on veut juste tester l'application sans se soucier du numéro de version exact.
 
 # EX.5
 
-## Sujet A — Deployment Environments API
+## 5A — Réflexion
 
-### Q20 : 
+### Q18 : 
+Je lui expliquerais que Prettier n'est pas là pour remettre en question son style personnel, mais pour uniformiser le code de toute l'équipe. L'argument principal est le gain de temps : cela supprime totalement les débats inutiles sur les espaces ou l'indentation pendant les revues de code (PR) et ça évite les conflits Git (merge conflicts) causés uniquement par des différences de formatage entre deux développeurs.
 
+### Q19 : 
+Étant donné qu'il y a une rupture de compatibilité avec l'existant, c'est un "Breaking Change". Selon les règles de SemVer, je dois incrémenter la version majeure et publier la v4.0.0. Vis-à-vis des utilisateurs de l'API, je dois impérativement communiquer cette rupture via le Changelog et fournir un guide de migration pour leur expliquer exactement ce qui a changé et comment ils doivent mettre à jour leur code pour que ça refonctionne.
 
-## Sujet B — Environment variables vs Secrets
+## 5B — Recherche autonome
 
-### Q21 : 
+### Q20 :
+La différence majeure est que git-cliff est un simple générateur de texte : il lit l'historique des commits pour écrire le fichier CHANGELOG.md. En revanche, semantic-release est l'outil qui automatise la release de bout en bout sans aucune intervention manuelle : il lit les commits, calcule tout seul la prochaine version, génère le changelog, crée le tag Git et publie la Release sur GitHub.
 
-
-## Sujet C — Render Preview Environments
-
-### Q22 : 
+### Q21 :
+Pour imposer ces contraintes, il faut ajouter une section rules dans le fichier commitlint.config.js, par exemple : rules: { 'subject-empty': [2, 'never'], 'subject-min-length': [2, 'always', 10] }. Le hook commit-msg de Husky est le script qui se déclenche localement au moment exact où l'on valide notre message dans le terminal. Il attrape le texte, le passe à commitlint, et annule la création du commit si les règles ne sont pas respectées.
