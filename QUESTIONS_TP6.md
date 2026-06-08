@@ -60,15 +60,19 @@ Je lui réponds qu'accepter 5 warnings revient à accepter une dette technique i
 4. refactor: réorganisation du routeur principal (Utilisé car le code a été modifié pour être plus propre, sans ajouter de fonctionnalité ni corriger de bug).
 
 ### Q11 :
-
-
-### Q12 :
-
-
-### Q13 :
-
+En tapant git commit -m "ajout de commitlint", le hook a bloqué le commit. Le terminal a affiché des erreurs en rouge (ex: type may not be empty [type-empty], subject may not be empty [subject-empty]). J'ai corrigé en respectant la convention : git commit -m "chore: ajout de commitlint", ce qui a permis de valider le commit.
 
 ## 3.2 — Connecter GitHub Actions à Render
+
+### Q12 :
+Dans mon git log, j'ai identifié plusieurs types de commits : feat, fix, chore, refactor, ci, et test. Selon les règles SemVer, les feat déclenchent une version MINOR et les fix une version PATCH. Je n'ai fait aucun commit de type BREAKING CHANGE (pas de !), donc il n'y a pas de saut MAJOR lié à une rupture de compatibilité. Puisque le niveau de changement le plus élevé est feat, cela devrait être une MINOR. Mais comme nous sommes au tout début du projet et qu'aucune version n'a encore été publiée, toutes ces features initiales forment la première version stable. La prochaine version sera donc la v1.0.0.
+
+### Q13 :
+Le collègue a tort. Étant donné que le paramètre est optionnel, les anciens clients qui appellent l'API sans ce paramètre continueront de fonctionner normalement. Il n'y a donc aucune rupture de compatibilité. Il s'agit d'un ajout de fonctionnalité rétrocompatible, ce qui correspond à une version MINOR, et non MAJOR.
+
+# EX.4
+
+## 4.1 — Créer le workflow de release
 
 ### Q14 :
 
@@ -76,7 +80,6 @@ Je lui réponds qu'accepter 5 warnings revient à accepter une dette technique i
 ### Q15 :
 
 
-# EX.4
 
 ### Q16 : 
 
