@@ -2,7 +2,7 @@
 const express = require('express');
 const { add, subtract, multiply, divide } = require('./calculator');
 const app = express();
-var a = 1;
+// var a = 1;
 const PORT = process.env.PORT || 3000;
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', version: '1.0.0' });

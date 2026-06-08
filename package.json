@@ -9,7 +9,8 @@
     "test:ci": "jest --ci --coverage --coverageReporters=lcov --coverageReporters=text --coverageReporters=json-summary",
     "lint": "eslint src/**/*.js --max-warnings=0",
     "lint:fix": "eslint src/**/*.js --fix",
-    "format:check": "prettier --check src/**/*.js"
+    "format:check": "prettier --check src/**/*.js",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -24,10 +25,13 @@
   },
   "homepage": "https://github.com/lorisnve/mon-premier-cicd#readme",
   "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.4.1",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.6.0",
+    "husky": "^9.1.7",
     "jest": "^30.4.2",
     "prettier": "^3.8.3"
   },
