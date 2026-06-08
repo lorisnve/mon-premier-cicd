@@ -107,7 +107,7 @@ jobs:
     environment: staging
     steps:
       - name: Déclencher le déploiement Render (Staging)
-        run: curl -X POST ${{ secrets.RENDER_STAGING_HOOK }}
+        run: curl -X POST "${{ secrets.RENDER_STAGING_HOOK }}"
         
       - name: Attendre le déploiement
         run: sleep 45
@@ -126,7 +126,7 @@ jobs:
     environment: production
     steps:
       - name: Déclencher le déploiement Render (Production)
-        run: curl -X POST ${{ secrets.RENDER_PROD_HOOK }}
+        run: curl -X POST "${{ secrets.RENDER_PROD_HOOK }}"
         
       - name: Attendre le déploiement
         run: sleep 45
