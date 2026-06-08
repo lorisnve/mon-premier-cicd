@@ -55,7 +55,7 @@ Je lui réponds qu'accepter 5 warnings revient à accepter une dette technique i
 
 ### Q10 :
 1. feat: ajout de la route de soustraction (Utilisé car c'est une nouvelle fonctionnalité ajoutée à l'API).
-
+2. fix: gestion de l'erreur de division par zéro (Utilisé car cela répare un bug du code existant).
 
 ### Q11 :
 
