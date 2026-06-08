@@ -19,7 +19,7 @@ concurrency:
 jobs:
   # ── JOB 1 : Lint ──────────────────────────────────────
   lint:
-    name: 🔍 Lint ESLint
+    name: 🔍 Lint & Format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +27,8 @@ jobs:
         uses: ./.github/actions/setup-node-cached
         with:
           node-version: '18'
+      - name: Vérification Prettier
+        run: npm run format:check
       - name: Vérification ESLint
         run: npm run lint
 
