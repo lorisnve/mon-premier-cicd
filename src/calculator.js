@@ -10,7 +10,7 @@ function add(a, b) {
 //  return a - b; // ← Bug : soustraction au lieu d'addition !
 // }
 
-// var unused = 42;
+var unused = 42; // TEST Q10 — violation ESLint volontaire
 
 function subtract(a, b) {
   return a - b;
