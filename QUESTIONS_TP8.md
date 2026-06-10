@@ -19,27 +19,27 @@ Deux exemples concrets :
 ### Q3 :
 Les 4 métriques DORA mesurent la performance d'une équipe DevOps :
 
-1. **Deployment Frequency** — À quelle fréquence on déploie en production. Niveau élite : **plusieurs fois par jour**. Le pipeline CI/CD y contribue en automatisant entièrement le déploiement à chaque merge sur `main`, supprimant toute opération manuelle qui ralentirait la cadence.
+1. **Deployment Frequency** — À quelle fréquence on déploie en production. Niveau élite : plusieurs fois par jour. Le pipeline CI/CD y contribue en automatisant entièrement le déploiement à chaque merge sur `main`, supprimant toute opération manuelle qui ralentirait la cadence.
 
-2. **Lead Time for Changes** — Temps entre le premier commit et la mise en production. Niveau élite : **moins d'une heure**. Le pipeline réduit ce délai en exécutant lint, tests et déploiement en parallèle ou en chaîne automatiquement, sans attente humaine.
+2. **Lead Time for Changes** — Temps entre le premier commit et la mise en production. Niveau élite : moins d'une heure. Le pipeline réduit ce délai en exécutant lint, tests et déploiement en parallèle ou en chaîne automatiquement, sans attente humaine.
 
-3. **Change Failure Rate** — Pourcentage de déploiements qui provoquent un incident en production. Niveau élite : **0 à 15 %**. Les jobs de tests automatisés, le scan de sécurité et l'environnement de staging agissent comme filtres pour empêcher les bugs d'atteindre la production.
+3. **Change Failure Rate** — Pourcentage de déploiements qui provoquent un incident en production. Niveau élite : 0 à 15 %. Les jobs de tests automatisés, le scan de sécurité et l'environnement de staging agissent comme filtres pour empêcher les bugs d'atteindre la production.
 
-4. **Mean Time to Restore (MTTR)** — Temps moyen pour rétablir le service après un incident. Niveau élite : **moins d'une heure**. Le pipeline contribue en permettant de rejouer rapidement un déploiement précédent (rollback) ou de pousser un hotfix en quelques minutes via le même workflow automatisé.
+4. **Mean Time to Restore (MTTR)** — Temps moyen pour rétablir le service après un incident. Niveau élite : moins d'une heure. Le pipeline contribue en permettant de rejouer rapidement un déploiement précédent (rollback) ou de pousser un hotfix en quelques minutes via le même workflow automatisé.
 
 ---
 
 ## Partie B — Vrai / Faux
 
-1. **FAUX** : `--audit-level=high` fait échouer le pipeline si une vulnérabilité de sévérité **HIGH ou CRITICAL** est trouvée. HIGH est déjà inclus dans le seuil. Pour bloquer uniquement sur CRITICAL, il faudrait utiliser `--audit-level=critical`.
+1. **FAUX** : `--audit-level=high` fait échouer le pipeline si une vulnérabilité de sévérité HIGH ou CRITICAL est trouvée. HIGH est déjà inclus dans le seuil. Pour bloquer uniquement sur CRITICAL, il faudrait utiliser `--audit-level=critical`.
 
 2. **VRAI** : Trivy dispose d'un scanner de secrets (`--scanners secret`) qui analyse le contenu des fichiers copiés dans l'image via les instructions `COPY` ou `ADD`. Il peut y détecter des patterns reconnus de clés API hardcodées (AWS, GitHub tokens, etc.).
 
-3. **FAUX** : `if: failure()` placé sur un **job** s'exécute si un des jobs dont il dépend (via `needs:`) a échoué. Ce n'est pas lié aux steps du même job. Si on veut réagir à l'échec d'un step précédent *au sein du même job*, on place `if: failure()` sur un **step**, pas sur un job.
+3. **FAUX** : `if: failure()` placé sur un job s'exécute si un des jobs dont il dépend (via `needs:`) a échoué. Ce n'est pas lié aux steps du même job. Si on veut réagir à l'échec d'un step précédent *au sein du même job*, on place `if: failure()` sur un step, pas sur un job.
 
 4. **VRAI** : Dependabot ouvre automatiquement des Pull Requests pour mettre à jour les dépendances, mais ne les merge jamais de lui-même par défaut. Une intervention humaine (review et merge) est toujours requise, sauf si on configure explicitement une règle d'auto-merge via GitHub.
 
-5. **FAUX** : Faire un `git rm` sur le fichier ne supprime que sa présence dans les futurs commits. L'historique Git conserve tous les commits précédents, et le secret reste accessible via `git log` ou `git show`. Il faut impérativement **révoquer et régénérer le secret immédiatement**, puis réécrire l'historique avec un outil comme BFG Repo-Cleaner ou `git filter-branch` pour l'effacer définitivement.
+5. **FAUX** : Faire un `git rm` sur le fichier ne supprime que sa présence dans les futurs commits. L'historique Git conserve tous les commits précédents, et le secret reste accessible via `git log` ou `git show`. Il faut impérativement révoquer et régénérer le secret immédiatement, puis réécrire l'historique avec un outil comme BFG Repo-Cleaner ou `git filter-branch` pour l'effacer définitivement.
 
 ---
 
@@ -53,7 +53,7 @@ Le projet n'a donc aucune dépendance connue comme vulnérable, ni directe ni tr
 
 ### Q5 :
 J'ai ajouté l'étape suivante à la fin du job `lint` dans `.github/workflows/ci.yml`.
-J'ai choisi `--audit-level=high` : le pipeline échoue uniquement si une vulnérabilité **HIGH ou CRITICAL** est détectée. Les vulnérabilités LOW et MODERATE ne bloquent pas les livraisons — elles sont moins dangereuses et souvent situées dans des dépendances de développement uniquement. C'est un compromis pragmatique entre sécurité et vélocité.
+J'ai choisi `--audit-level=high` : le pipeline échoue uniquement si une vulnérabilité HIGH ou CRITICAL est détectée. Les vulnérabilités LOW et MODERATE ne bloquent pas les livraisons — elles sont moins dangereuses et souvent situées dans des dépendances de développement uniquement. C'est un compromis pragmatique entre sécurité et vélocité.
 
 ## 2.2 — Trivy
 
@@ -66,7 +66,7 @@ Paramètres choisis :
 * `format: 'table'` : sortie lisible directement dans les logs GitHub Actions.
 
 ### Q7 :
-J'ai configuré `needs: [build-docker]`. Cet ordre est obligatoire car Trivy scanne une image Docker qui doit **exister** pour être analysée. Si le job `security` démarrait en parallèle ou avant `build-docker`, l'image `mon-premier-cicd:${{ github.sha }}` ne serait pas encore construite et Trivy échouerait avec une erreur "image not found". La dépendance garantit que l'artefact à scanner est disponible.
+J'ai configuré `needs: [build-docker]`. Cet ordre est obligatoire car Trivy scanne une image Docker qui doit exister pour être analysée. Si le job `security` démarrait en parallèle ou avant `build-docker`, l'image `mon-premier-cicd:${{ github.sha }}` ne serait pas encore construite et Trivy échouerait avec une erreur "image not found". La dépendance garantit que l'artefact à scanner est disponible.
 
 En complément, j'ai mis à jour `deploy-staging` pour dépendre de `security` (`needs: [security]`) : on ne déploie que si le scan de sécurité a passé.
 
@@ -92,12 +92,12 @@ Points clés de l'implémentation :
 * `needs:` liste tous les jobs du pipeline pour intercepter n'importe quel échec, qu'il se produise au lint, aux tests ou au déploiement.
 * `if: failure()` s'évalue à `true` si au moins un des jobs listés dans `needs` a le statut `failure` (les jobs `skipped` ne comptent pas).
 * Le webhook URL est injecté via une variable d'environnement locale au step (`env:`) et non directement dans la commande `curl`, pour éviter qu'il apparaisse dans les logs.
-* L'URL est stockée dans `${{ secrets.SLACK_WEBHOOK_URL }}` (configurée dans **GitHub Settings → Secrets → Actions**), jamais écrite en dur dans le YAML.
+* L'URL est stockée dans `${{ secrets.SLACK_WEBHOOK_URL }}` (configurée dans GitHub Settings → Secrets → Actions), jamais écrite en dur dans le YAML.
 
 ### Q10 :
 Pour tester, j'ai décommenté la ligne `var unused = 42;` dans `src/calculator.js` et poussé le commit `test: ESLint violation to trigger notify-failure Slack`.
 
-Le pipeline a échoué au step **ESLint** du job `lint`. Le job `notify-failure` s'est ensuite déclenché et a envoyé le message Slack suivant (reçu à 12h01) :
+Le pipeline a échoué au step ESLint du job `lint`. Le job `notify-failure` s'est ensuite déclenché et a envoyé le message Slack suivant (reçu à 12h01) :
 
 > ❌ **Pipeline échoué sur `main`**
 > * **Repo** : `lorisnve/mon-premier-cicd`
@@ -113,11 +113,11 @@ J'ai ajouté le job `notify-success` qui se déclenche après un déploiement de
 Différences avec le message d'échec :
 * La couleur de l'attachment passe de `#FF0000` (rouge) à `#36A64F` (vert).
 * Le texte principal devient `✅ Déploiement réussi en production`.
-* On remplace le champ **Logs** (utilisé pour investiguer) par un champ **URL Production** pointant vers l'application en ligne : `https://mon-premier-cicd-m7k0.onrender.com`. Cela permet de vérifier directement le résultat du déploiement en un clic.
+* On remplace le champ Logs (utilisé pour investiguer) par un champ URL Production pointant vers l'application en ligne : `https://mon-premier-cicd-m7k0.onrender.com`. Cela permet de vérifier directement le résultat du déploiement en un clic.
 * Le `needs` se limite à `[deploy-production]` au lieu de tous les jobs, car on ne veut célébrer que la réussite complète du déploiement final.
 
 ### Q12 :
-Trois stratégies pour lutter contre la **notification fatigue** :
+Trois stratégies pour lutter contre la notification fatigue :
 
 1. **Filtrer par sévérité et pertinence** : n'envoyer des notifications Slack qu'en cas d'échec sur `main` (ou les branches de release). Les branches `feature/**` n'envoient que des notifications en cas d'échec critique (pas les avertissements LOW). On ajoute une condition `if: failure() && github.ref == 'refs/heads/main'` pour cibler uniquement ce qui impacte la production.
 
@@ -135,22 +135,22 @@ Trois stratégies pour lutter contre la **notification fatigue** :
 Données mesurées à partir de l'historique Git (`git log`) du projet :
 
 **1. Deployment Frequency**
-- **Valeur mesurée** : commits poussés sur `main` sur 5 jours distincts (18/05, 19/05, 22/05, 08/06, 10/06) sur une période de 23 jours → environ **1 déploiement tous les 4-5 jours** (niveau *Low performer*).
+- **Valeur mesurée** : commits poussés sur `main` sur 5 jours distincts (18/05, 19/05, 22/05, 08/06, 10/06) sur une période de 23 jours → environ 1 déploiement tous les 4-5 jours (niveau *Low performer*).
 - **Niveau élite** : plusieurs fois par jour.
 - **Amélioration** : pratiquer le trunk-based development — travailler en petites branches de courte durée (< 1 jour) et merger fréquemment sur `main` plutôt que d'accumuler plusieurs jours de travail avant de pousser.
 
 **2. Lead Time for Changes**
-- **Valeur mesurée** : les commits vont directement sur `main` et le pipeline CI s'exécute immédiatement. Sur la session du 10/06, le premier commit (`11:49`) et le dernier (`12:02`) sont séparés de 13 minutes. Le pipeline prend ~5-10 min. Lead time estimé : **~20-30 minutes** (niveau *Elite* atteint).
+- **Valeur mesurée** : les commits vont directement sur `main` et le pipeline CI s'exécute immédiatement. Sur la session du 10/06, le premier commit (`11:49`) et le dernier (`12:02`) sont séparés de 13 minutes. Le pipeline prend ~5-10 min. Lead time estimé : ~20-30 minutes (niveau *Elite* atteint).
 - **Niveau élite** : moins d'une heure.
 - **Amélioration** : déjà dans la zone élite. Pour aller plus loin, paralléliser davantage les jobs CI (lint + tests en parallèle plutôt qu'en séquence) pour réduire le temps de pipeline.
 
 **3. Change Failure Rate**
-- **Valeur mesurée** : sur ~30 commits, on compte ~6 commits de type `fix:` ou `revert` suite à des problèmes introduits → **~20 %** (niveau *Medium performer*).
+- **Valeur mesurée** : sur ~30 commits, on compte ~6 commits de type `fix:` ou `revert` suite à des problèmes introduits → ~20 % (niveau *Medium performer*).
 - **Niveau élite** : 0 à 15 %.
 - **Amélioration** : ajouter des tests d'intégration dans la CI et une revue de code systématique via Pull Requests obligatoires (branch protection rule) avant tout merge sur `main`, pour attraper les erreurs avant qu'elles atteignent la branche principale.
 
 **4. Mean Time to Restore (MTTR)**
-- **Valeur mesurée** : lors de l'incident ESLint du 10/06, la violation a été introduite à `11:59` et corrigée à `12:02` → **3 minutes** (niveau *Elite* atteint). Sur les sessions précédentes (08/06), les correctifs suivaient les bugs sous ~10-20 minutes.
+- **Valeur mesurée** : lors de l'incident ESLint du 10/06, la violation a été introduite à `11:59` et corrigée à `12:02` → 3 minutes (niveau *Elite* atteint). Sur les sessions précédentes (08/06), les correctifs suivaient les bugs sous ~10-20 minutes.
 - **Niveau élite** : moins d'une heure.
 - **Amélioration** : déjà dans la zone élite. Pour industrialiser, mettre en place un mécanisme de rollback automatique (re-déploiement du commit précédent) déclenché par le health check, sans intervention manuelle.
 
@@ -160,15 +160,15 @@ Données mesurées à partir de l'historique Git (`git log`) du projet :
 Monitor configuré sur UptimeRobot avec les paramètres suivants :
 - **Type** : HTTP(s)
 - **URL surveillée** : `https://mon-premier-cicd-m7k0.onrender.com/health`
-- **Intervalle de check** : toutes les **5 minutes**
+- **Intervalle de check** : toutes les 5 minutes
 - **Alerte** : email à mon adresse personnelle
 
 Choix de l'intervalle à 5 minutes : c'est le minimum disponible sur le plan gratuit et c'est suffisamment granulaire pour détecter une panne rapidement. Une application de production critique mériterait 1 minute, mais pour un projet étudiant hébergé sur Render (avec une mise en veille automatique après inactivité), 5 minutes est un bon compromis.
 
-Lors de la configuration, UptimeRobot a immédiatement détecté une panne réelle : l'application était en statut **Down (503 Service Unavailable)** car Render avait mis le conteneur en veille faute de trafic récent. Le monitor est repassé **Up** dès que Render a redémarré le service au premier check suivant (~30 secondes de cold start). Cela valide que le monitoring fonctionne correctement.
+Lors de la configuration, UptimeRobot a immédiatement détecté une panne réelle : l'application était en statut Down (503 Service Unavailable) car Render avait mis le conteneur en veille faute de trafic récent. Le monitor est repassé Up dès que Render a redémarré le service au premier check suivant (~30 secondes de cold start). Cela valide que le monitoring fonctionne correctement.
 
 ### Q15 :
-UptimeRobot confirme que l'application **répond**, mais pas **pourquoi** elle est tombée ni dans quel état elle se trouve. L'incident 503 observé lors de la configuration illustre exactement ce manque : UptimeRobot a signalé "Down" sans indiquer la cause. C'est uniquement en inspectant les **headers HTTP bruts** de la réponse qu'on a pu identifier `X-Render-Routing: hibernate-wake-error` — ce qui distingue une mise en veille Render d'un vrai crash applicatif. UptimeRobot seul n'aurait jamais permis ce diagnostic.
+UptimeRobot confirme que l'application répond, mais pas pourquoi elle est tombée ni dans quel état elle se trouve. L'incident 503 observé lors de la configuration illustre exactement ce manque : UptimeRobot a signalé "Down" sans indiquer la cause. C'est uniquement en inspectant les headers HTTP bruts de la réponse qu'on a pu identifier `X-Render-Routing: hibernate-wake-error` — ce qui distingue une mise en veille Render d'un vrai crash applicatif. UptimeRobot seul n'aurait jamais permis ce diagnostic.
 
 Pour diagnostiquer rapidement un incident en production, il manque :
 
@@ -176,5 +176,60 @@ Pour diagnostiquer rapidement un incident en production, il manque :
 - **Les logs applicatifs** : traces d'erreur Node.js (stack traces, erreurs non catchées). Source : dashboard Render (onglet Logs) ou un agrégateur comme Papertrail ou Datadog.
 - **Les métriques systèmes** : consommation CPU, mémoire, nombre de connexions actives au moment de la panne. Source : Render Metrics ou un APM comme New Relic.
 - **L'historique des déploiements** : quel commit était en production au moment de l'incident ? Source : onglet GitHub Actions / Deployments ou l'API GitHub Deployments.
+
+---
+
+# EX.5
+
+## 5A — Réflexion
+
+### Q16 :
+Je répondrais au CTO que désactiver Trivy n'élimine pas les vulnérabilités — ça supprime uniquement leur visibilité. Si une CVE critique est exploitée en production après avoir désactivé le scan, la responsabilité de l'équipe est directement engagée.
+
+L'alternative concrète est de rendre Trivy non-bloquant tout en conservant la traçabilité :
+* Passer `exit-code` à `0` sur le job `security` pour que le pipeline ne soit plus bloqué par Trivy.
+* Ajouter `format: 'sarif'` et une étape `upload-artifact` pour envoyer le rapport dans l'onglet Security de GitHub (GitHub Code Scanning). Les CVE sont visibles et traçables sans bloquer les livraisons.
+* Créer un fichier `.trivyignore` pour les CVE connues et acceptées (comme les 3 HIGH de `node:18-alpine`), avec une date de révision commentée, pour ne pas noyer les alertes importantes dans le bruit.
+* Ouvrir une issue de suivi dédiée pour chaque CVE ignorée, avec un owner et une date limite de correction.
+
+Cette approche préserve la vélocité (le pipeline n'est plus bloqué) tout en maintenant la sécurité (les CVE restent visibles et actionnables). Désactiver Trivy complètement reviendrait à conduire sans tableau de bord.
+
+### Q17 :
+Cinq pratiques concrètes pour réduire le MTTR de 4 heures à 15 minutes :
+
+1. **Rollback automatique** : déclencher automatiquement le re-déploiement du commit précédent si le health check échoue dans les 5 minutes suivant un déploiement. Zéro intervention manuelle nécessaire pour les régressions classiques.
+2. **Observabilité centralisée** : mettre en place un stack logs + métriques + traces (ex: Datadog ou Grafana/Loki) pour identifier la cause racine en secondes plutôt qu'en heures passées à fouiller des logs éparpillés.
+3. **Runbooks d'incident** : documenter les procédures de résolution pour les 5-10 incidents les plus fréquents (ex: "503 Render → vérifier les logs de démarrage → rollback si crash au boot"). Réduit le temps de diagnostic même pour un développeur qui n'est pas l'auteur du code.
+4. **Feature flags** : isoler les nouvelles fonctionnalités derrière des flags (ex: LaunchDarkly). En cas d'incident, on désactive le flag en 30 secondes sans redéploiement, le temps de préparer un vrai correctif.
+5. **Alertes graduées et on-call structuré** : définir des SLO clairs avec des seuils d'alerte (ex: taux d'erreur > 1% pendant 2 minutes = alerte critique) et une rotation on-call avec escalade automatique. Évite les situations où personne ne sait qui est responsable de réagir.
+
+---
+
+## 5B — Recherche autonome
+
+### Q18 :
+Gitleaks est un outil open-source de type SAST (Static Application Security Testing) qui détecte les secrets hardcodés (clés API, tokens, mots de passe, certificats) dans les dépôts Git. Il scanne à la fois les fichiers du répertoire de travail et l'intégralité de l'historique des commits, y compris les commits supprimés ou amendés.
+
+Intégration dans GitHub Actions via l'action officielle :
+```yaml
+- name: Scan secrets avec Gitleaks
+  uses: gitleaks/gitleaks-action@v2
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+L'action échoue le pipeline si un secret est détecté. Elle peut également être configurée en pre-commit hook local via `gitleaks protect --staged`.
+
+Complémentarité avec npm audit et Trivy :
+* `npm audit` détecte les dépendances avec des CVE connues — il ne cherche pas de secrets.
+* Trivy scanne les vulnérabilités dans les images Docker et peut détecter des secrets dans les fichiers de l'image au moment du build.
+* Gitleaks se concentre sur l'historique Git complet, interceptant les secrets avant même qu'ils n'entrent dans une image. C'est le seul des trois à pouvoir retrouver un secret ajouté puis supprimé 10 commits plus tôt. Les trois outils couvrent des périmètres complémentaires et non redondants.
+
+### Q19 :
+GitHub Secret scanning est une fonctionnalité qui analyse automatiquement le contenu des dépôts pour détecter des tokens et clés appartenant à des providers partenaires. GitHub détecte les secrets de plus de 200 providers, dont AWS, Azure, GCP, GitHub (tokens personnels et tokens d'application), Stripe, Slack, Twilio, npm, Docker Hub, Shopify, et bien d'autres.
+
+Disponibilité :
+* **Dépôts publics** : secret scanning activé gratuitement et automatiquement par défaut. En cas de détection, GitHub notifie directement le provider partenaire qui peut révoquer le secret, en plus d'alerter le propriétaire du dépôt.
+* **Dépôts privés** : la fonctionnalité complète nécessite GitHub Advanced Security (GHAS), disponible uniquement sur les plans GitHub Enterprise (payant). Sur le plan gratuit, les dépôts privés ne bénéficient pas du secret scanning complet.
+* **Exception** : la fonctionnalité push protection (qui bloque un push contenant un secret détecté) est disponible gratuitement pour tous les dépôts publics depuis 2023, et pour les dépôts privés uniquement avec GHAS.
 
 
