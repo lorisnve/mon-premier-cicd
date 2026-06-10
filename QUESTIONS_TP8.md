@@ -86,39 +86,7 @@ La solution recommandée est la combinaison 1 + 3 : ignorer temporairement avec 
 ## 3.1 — Notifications Slack
 
 ### Q9 :
-J'ai remplacé l'ancien job `notify` par deux jobs dans `.github/workflows/ci.yml` :
-
-**Job `notify-failure`** :
-```yaml
-notify-failure:
-  name: 🚨 Notify Failure (Slack)
-  needs: [lint, test, report, build-docker, security, deploy-staging, deploy-production]
-  if: failure()
-  runs-on: ubuntu-latest
-  steps:
-    - name: Envoyer une alerte Slack
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        REPO: ${{ github.repository }}
-        BRANCH: ${{ github.ref_name }}
-        SHA: ${{ github.sha }}
-        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      run: |
-        curl -X POST "$SLACK_WEBHOOK_URL" \
-          -H 'Content-type: application/json' \
-          -d "{
-            \"text\": \"❌ *Pipeline échoué sur \`$BRANCH\`*\",
-            \"attachments\": [{
-              \"color\": \"#FF0000\",
-              \"fields\": [
-                {\"title\": \"Repo\",        \"value\": \"$REPO\",    \"short\": true},
-                {\"title\": \"Branche\",     \"value\": \"$BRANCH\",  \"short\": true},
-                {\"title\": \"Commit SHA\",  \"value\": \"$SHA\"},
-                {\"title\": \"Logs\",        \"value\": \"$RUN_URL\"}
-              ]
-            }]
-          }"
-```
+J'ai remplacé l'ancien job `notify` par deux jobs dans `.github/workflows/ci.yml`.
 
 Points clés de l'implémentation :
 * `needs:` liste tous les jobs du pipeline pour intercepter n'importe quel échec, qu'il se produise au lint, aux tests ou au déploiement.
@@ -127,27 +95,20 @@ Points clés de l'implémentation :
 * L'URL est stockée dans `${{ secrets.SLACK_WEBHOOK_URL }}` (configurée dans **GitHub Settings → Secrets → Actions**), jamais écrite en dur dans le YAML.
 
 ### Q10 :
-Pour tester, j'ai décommenté la ligne `var unused = 42;` dans `src/calculator.js` et poussé le commit `test: introduce ESLint violation to test notify-failure`.
+Pour tester, j'ai décommenté la ligne `var unused = 42;` dans `src/calculator.js` et poussé le commit `test: ESLint violation to trigger notify-failure Slack`.
 
-Le pipeline a échoué au step **ESLint** du job `lint`. Le job `notify-failure` s'est ensuite déclenché et a envoyé le message Slack suivant :
-* Texte : `❌ Pipeline échoué sur \`main\``
-* **Repo** : `lorisnve/mon-premier-cicd`
-* **Branche** : `main`
-* **Commit SHA** : `dce3073...`
-* **Logs** : lien direct vers l'exécution GitHub Actions
+Le pipeline a échoué au step **ESLint** du job `lint`. Le job `notify-failure` s'est ensuite déclenché et a envoyé le message Slack suivant (reçu à 12h01) :
 
-Après confirmation, j'ai immédiatement corrigé en recommentant la ligne et poussé `fix: remove ESLint violation test`.
+> ❌ **Pipeline échoué sur `main`**
+> * **Repo** : `lorisnve/mon-premier-cicd`
+> * **Branche** : `main`
+> * **Commit SHA** : `34741c3ffc337b121d2749dba75f237471de1603`
+> * **Logs** : https://github.com/lorisnve/mon-premier-cicd/actions/runs/27268516637
 
-> **Prérequis** : le secret `SLACK_WEBHOOK_URL` doit être configuré dans **GitHub Settings → Secrets and variables → Actions** avec l'URL webhook générée sur api.slack.com/apps.
+La notification contient bien toutes les informations attendues. Après confirmation, j'ai immédiatement corrigé en recommentant la ligne et poussé `fix: remove ESLint violation test`.
 
 ### Q11 :
 J'ai ajouté le job `notify-success` qui se déclenche après un déploiement de production réussi :
-
-```yaml
-notify-success:
-  needs: [deploy-production]
-  if: success()
-```
 
 Différences avec le message d'échec :
 * La couleur de l'attachment passe de `#FF0000` (rouge) à `#36A64F` (vert).
