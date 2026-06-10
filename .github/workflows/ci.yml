@@ -31,6 +31,8 @@ jobs:
         run: npm run format:check
       - name: Vérification ESLint
         run: npm run lint
+      - name: Audit de sécurité npm
+        run: npm audit --audit-level=high
 
   # ── JOB 2 : Tests (workflow réutilisable) ─────────────
   test:
@@ -100,9 +102,26 @@ jobs:
       - name: Step Summary (Docker)
         run: echo "✅ Docker image build step executed" >> $GITHUB_STEP_SUMMARY
 
-  # ── JOB 5 : Deploy Staging (Challenge) ────────────────
-  deploy-staging:
+  # ── JOB 5 : Security Scan (Trivy) ───────────────────────
+  security:
+    name: 🔒 Security Scan (Trivy)
     needs: [build-docker]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build de l'image pour le scan
+        run: docker build -t mon-premier-cicd:${{ github.sha }} .
+      - name: Scan Trivy de l'image Docker
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'mon-premier-cicd:${{ github.sha }}'
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
+          format: 'table'
+
+  # ── JOB 6 : Deploy Staging (Challenge) ────────────────
+  deploy-staging:
+    needs: [security]
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -119,7 +138,7 @@ jobs:
       - name: Step Summary (Staging)
         run: echo "🚀 Staging deployed at https://mon-premier-cicd-cvyk.onrender.com" >> $GITHUB_STEP_SUMMARY
 
-  # ── JOB 6 : Deploy Production (Challenge) ─────────────
+  # ── JOB 7 : Deploy Production (Challenge) ─────────────
   deploy-production:
     needs: [deploy-staging]
     runs-on: ubuntu-latest
@@ -137,7 +156,7 @@ jobs:
       - name: Step Summary (Production)
         run: echo "🌍 Production deployed at https://mon-premier-cicd-m7k0.onrender.com" >> $GITHUB_STEP_SUMMARY
 
-  # ── JOB 7 : Notification (Challenge) ──────────────────
+  # ── JOB 8 : Notification (Challenge) ──────────────────
   notify:
     needs: [deploy-staging, deploy-production]
     if: always()
