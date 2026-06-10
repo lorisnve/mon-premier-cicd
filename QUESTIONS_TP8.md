@@ -125,4 +125,56 @@ Trois stratégies pour lutter contre la **notification fatigue** :
 
 3. **Différencier les canaux par audience** : créer plusieurs channels Slack dédiés (`#ci-alerts` pour les développeurs, `#deployments` pour les PO/DevOps, `#security` pour les CVE Trivy). Chaque équipe ne reçoit que les alertes qui la concernent directement, réduisant le bruit pour chaque individu.
 
+---
+
+# EX.4
+
+## 4.1 — Métriques DORA
+
+### Q13 :
+Données mesurées à partir de l'historique Git (`git log`) du projet :
+
+**1. Deployment Frequency**
+- **Valeur mesurée** : commits poussés sur `main` sur 5 jours distincts (18/05, 19/05, 22/05, 08/06, 10/06) sur une période de 23 jours → environ **1 déploiement tous les 4-5 jours** (niveau *Low performer*).
+- **Niveau élite** : plusieurs fois par jour.
+- **Amélioration** : pratiquer le trunk-based development — travailler en petites branches de courte durée (< 1 jour) et merger fréquemment sur `main` plutôt que d'accumuler plusieurs jours de travail avant de pousser.
+
+**2. Lead Time for Changes**
+- **Valeur mesurée** : les commits vont directement sur `main` et le pipeline CI s'exécute immédiatement. Sur la session du 10/06, le premier commit (`11:49`) et le dernier (`12:02`) sont séparés de 13 minutes. Le pipeline prend ~5-10 min. Lead time estimé : **~20-30 minutes** (niveau *Elite* atteint).
+- **Niveau élite** : moins d'une heure.
+- **Amélioration** : déjà dans la zone élite. Pour aller plus loin, paralléliser davantage les jobs CI (lint + tests en parallèle plutôt qu'en séquence) pour réduire le temps de pipeline.
+
+**3. Change Failure Rate**
+- **Valeur mesurée** : sur ~30 commits, on compte ~6 commits de type `fix:` ou `revert` suite à des problèmes introduits → **~20 %** (niveau *Medium performer*).
+- **Niveau élite** : 0 à 15 %.
+- **Amélioration** : ajouter des tests d'intégration dans la CI et une revue de code systématique via Pull Requests obligatoires (branch protection rule) avant tout merge sur `main`, pour attraper les erreurs avant qu'elles atteignent la branche principale.
+
+**4. Mean Time to Restore (MTTR)**
+- **Valeur mesurée** : lors de l'incident ESLint du 10/06, la violation a été introduite à `11:59` et corrigée à `12:02` → **3 minutes** (niveau *Elite* atteint). Sur les sessions précédentes (08/06), les correctifs suivaient les bugs sous ~10-20 minutes.
+- **Niveau élite** : moins d'une heure.
+- **Amélioration** : déjà dans la zone élite. Pour industrialiser, mettre en place un mécanisme de rollback automatique (re-déploiement du commit précédent) déclenché par le health check, sans intervention manuelle.
+
+## 4.2 — UptimeRobot
+
+### Q14 :
+Monitor configuré sur UptimeRobot avec les paramètres suivants :
+- **Type** : HTTP(s)
+- **URL surveillée** : `https://mon-premier-cicd-m7k0.onrender.com/health`
+- **Intervalle de check** : toutes les **5 minutes**
+- **Alerte** : email à mon adresse personnelle
+
+Choix de l'intervalle à 5 minutes : c'est le minimum disponible sur le plan gratuit et c'est suffisamment granulaire pour détecter une panne rapidement. Une application de production critique mériterait 1 minute, mais pour un projet étudiant hébergé sur Render (avec une mise en veille automatique après inactivité), 5 minutes est un bon compromis.
+
+Lors de la configuration, UptimeRobot a immédiatement détecté une panne réelle : l'application était en statut **Down (503 Service Unavailable)** car Render avait mis le conteneur en veille faute de trafic récent. Le monitor est repassé **Up** dès que Render a redémarré le service au premier check suivant (~30 secondes de cold start). Cela valide que le monitoring fonctionne correctement.
+
+### Q15 :
+UptimeRobot confirme que l'application **répond**, mais pas **pourquoi** elle est tombée ni dans quel état elle se trouve. L'incident 503 observé lors de la configuration illustre exactement ce manque : UptimeRobot a signalé "Down" sans indiquer la cause. C'est uniquement en inspectant les **headers HTTP bruts** de la réponse qu'on a pu identifier `X-Render-Routing: hibernate-wake-error` — ce qui distingue une mise en veille Render d'un vrai crash applicatif. UptimeRobot seul n'aurait jamais permis ce diagnostic.
+
+Pour diagnostiquer rapidement un incident en production, il manque :
+
+- **Les headers et codes de réponse HTTP détaillés** : le header `X-Render-Routing: hibernate-wake-error` a révélé la vraie cause du 503 lors de cet incident. Source : logs du reverse proxy (Cloudflare/Render) ou un outil de monitoring APM.
+- **Les logs applicatifs** : traces d'erreur Node.js (stack traces, erreurs non catchées). Source : dashboard Render (onglet Logs) ou un agrégateur comme Papertrail ou Datadog.
+- **Les métriques systèmes** : consommation CPU, mémoire, nombre de connexions actives au moment de la panne. Source : Render Metrics ou un APM comme New Relic.
+- **L'historique des déploiements** : quel commit était en production au moment de l'incident ? Source : onglet GitHub Actions / Deployments ou l'API GitHub Deployments.
+
 
