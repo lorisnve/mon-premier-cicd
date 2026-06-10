@@ -156,16 +156,63 @@ jobs:
       - name: Step Summary (Production)
         run: echo "🌍 Production deployed at https://mon-premier-cicd-m7k0.onrender.com" >> $GITHUB_STEP_SUMMARY
 
-  # ── JOB 8 : Notification (Challenge) ──────────────────
-  notify:
-    needs: [deploy-staging, deploy-production]
-    if: always()
+  # ── JOB 8 : Notification échec (Slack) ───────────────
+  notify-failure:
+    name: 🚨 Notify Failure (Slack)
+    needs: [lint, test, report, build-docker, security, deploy-staging, deploy-production]
+    if: failure()
     runs-on: ubuntu-latest
     steps:
-      - name: Send Notification to Step Summary
+      - name: Envoyer une alerte Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          if [ "${{ needs.deploy-staging.result }}" = "success" ] && [ "${{ needs.deploy-production.result }}" = "success" ]; then
-            echo "🎉 Pipeline de bout en bout réussi !" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ Le pipeline a échoué à une des étapes de déploiement." >> $GITHUB_STEP_SUMMARY
-          fi
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            -d "{
+              \"text\": \"❌ *Pipeline échoué sur \`$BRANCH\`*\",
+              \"attachments\": [{
+                \"color\": \"#FF0000\",
+                \"fields\": [
+                  {\"title\": \"Repo\",   \"value\": \"$REPO\",    \"short\": true},
+                  {\"title\": \"Branche\", \"value\": \"$BRANCH\",  \"short\": true},
+                  {\"title\": \"Commit SHA\", \"value\": \"$SHA\"},
+                  {\"title\": \"Logs\",   \"value\": \"$RUN_URL\"}
+                ]
+              }]
+            }"
+
+  # ── JOB 9 : Notification succès (Slack) ───────────────
+  notify-success:
+    name: ✅ Notify Success (Slack)
+    needs: [deploy-production]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Envoyer une confirmation Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            -d "{
+              \"text\": \"✅ *Déploiement réussi en production*\",
+              \"attachments\": [{
+                \"color\": \"#36A64F\",
+                \"fields\": [
+                  {\"title\": \"Repo\",   \"value\": \"$REPO\",    \"short\": true},
+                  {\"title\": \"Branche\", \"value\": \"$BRANCH\",  \"short\": true},
+                  {\"title\": \"Commit SHA\", \"value\": \"$SHA\"},
+                  {\"title\": \"URL Production\", \"value\": \"https://mon-premier-cicd-m7k0.onrender.com\"},
+                  {\"title\": \"Logs\",   \"value\": \"$RUN_URL\"}
+                ]
+              }]
+            }"
