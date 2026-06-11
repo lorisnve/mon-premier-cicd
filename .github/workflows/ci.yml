@@ -96,9 +96,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build Docker Image
-        continue-on-error: true
-        run: docker build -t mon-premier-cicd .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker Image (avec cache GHA)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: mon-premier-cicd:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Step Summary (Docker)
         run: echo "✅ Docker image build step executed" >> $GITHUB_STEP_SUMMARY
 
