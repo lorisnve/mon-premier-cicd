@@ -17,7 +17,7 @@ WORKDIR /app
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/src ./src
 # Installer UNIQUEMENT les dépendances de production
-RUN npm ci --only=production
+RUN npm ci --only=production --ignore-scripts
 # Sécurité : utilisateur non-root
 USER node
 # Port documenté
