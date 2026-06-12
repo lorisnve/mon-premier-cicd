@@ -10,16 +10,16 @@ on:
         type: number
         default: 80
     outputs:
-      lines:
+      coverage:
         description: 'Coverage lines % (dernière instance matrix terminée)'
-        value: ${{ jobs.test.outputs.lines }}
+        value: ${{ jobs.test.outputs.coverage }}
 
 jobs:
   test:
     name: 🧪 Tests — Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
     outputs:
-      lines: ${{ steps.coverage.outputs.lines }}
+      coverage: ${{ steps.coverage.outputs.lines }}
     strategy:
       fail-fast: false
       matrix:

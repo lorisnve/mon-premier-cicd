@@ -22,7 +22,6 @@ jobs:
     name: 🔍 Lint & Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - name: Setup Node.js & npm ci
         uses: ./.github/actions/setup-node-cached
         with:
@@ -73,8 +72,8 @@ jobs:
           done
       - name: Afficher le coverage
         run: |
-          # needs.test.outputs.lines = dernière valeur matrix (Node 20 en général)
-          echo "📈 Coverage lines (dernière instance matrix) : ${{ needs.test.outputs.lines }}%"
+          # needs.test.outputs.coverage = dernière valeur matrix (Node 20 en général)
+          echo "📈 Coverage lines (dernière instance matrix) : ${{ needs.test.outputs.coverage }}%"
       - name: Résultat global CI
         run: |
           lint_ok='${{ needs.lint.result }}'
